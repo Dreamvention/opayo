@@ -2,25 +2,25 @@
 	<fieldset class="opayo-payment">
 		<legend>{{ text_credit_card }}</legend>
 		<div id="opayo-cards" style="display: {% if cards %}block{% else %}none{% endif %}">
-			<div class="row mb-3">
-				<label class="col-sm-4 col-form-label">{{ entry_card }}</label>
-				<div class="col-sm-8">
-					<div class="form-check form-check-inline">
-						<input type="radio" name="opayo_card_existing" value="1" id="input-opayo-card-existing" class="form-check-input input-opayo-card-existing" {% if cards %}checked{% endif %} />	
-						<label for="input-opayo-card-existing" class="form-check-label">{{ entry_card_existing }}</label>
-					</div>	
-					<div class="form-check form-check-inline">
-						<input type="radio" name="opayo_card_existing" value="0" id="input-opayo-card-new" class="form-check-input input-opayo-card-existing" {% if not cards %}checked{% endif %} />	
-						<label for="input-opayo-card-new" class="form-check-label">{{ entry_card_new }}</label>
-					</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">{{ entry_card }}</label>
+				<div class="col-sm-10">
+					<label class="radio-inline">
+						<input type="radio" name="opayo_card_existing" value="1" id="input-opayo-card-existing" class="input-opayo-card-existing" {% if cards %}checked{% endif %} />	
+						{{ entry_card_existing }}				
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="opayo_card_existing" value="0" id="input-opayo-card-new" class="input-opayo-card-existing" {% if not cards %}checked{% endif %} />
+						{{ entry_card_new }}
+					</label>
 				</div>
 			</div>
 		</div>
 		<div id="opayo-card-existing" style="display: {% if cards %}block{% else %}none{% endif %}">                
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-opayo-card">{{ entry_card_choice }}</label>
-				<div class="col-sm-6">
-					<select name="opayo_card_token" id="input-opayo-card" class="form-select">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-opayo-card">{{ entry_card_choice }}</label>
+				<div class="col-sm-8">
+					<select name="opayo_card_token" id="input-opayo-card" class="form-control">
 						{% for card in cards %}
 						<option value="{{ card['token'] }}">{{ text_card_type }} {{ card['type'] }}, {{ text_card_digits }} {{ card['digits'] }}, {{ text_card_expiry }} {{ card['expiry'] }}</option>
 						{% endfor %}
@@ -30,73 +30,76 @@
 					<input type="button" value="{{ button_delete_card }}" id="opayo-button-delete-card" data-loading-text="{{ text_loading }}" class="btn btn-danger" />
 				</div>
 			</div>
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-card-cvv2">{{ entry_card_cvv2 }}</label>
-				<div class="col-sm-8">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-card-cvv2">{{ entry_card_cvv2 }}</label>
+				<div class="col-sm-10">
 					<input type="text" name="opayo_card_cvv2_1" value="" placeholder="{{ entry_card_cvv2 }}" id="input-card-cvv2" class="form-control" />
 				</div>
 			</div>
 		</div>
 		<div id="opayo-card-new" style="display: {% if not cards %}block{% else %}none{% endif %}">
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-card-owner">{{ entry_card_owner }}</label>
-				<div class="col-sm-8">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-card-owner">{{ entry_card_owner }}</label>
+				<div class="col-sm-10">
 					<input type="text" name="opayo_card_owner" value="" placeholder="{{ entry_card_owner }}" id="input-card-owner" class="form-control" />
 				</div>
 			</div>
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-card-type">{{ entry_card_type }}</label>
-				<div class="col-sm-8">
-					<select name="opayo_card_type" id="input-card-type" class="form-select">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-card-type">{{ entry_card_type }}</label>
+				<div class="col-sm-10">
+					<select name="opayo_card_type" id="input-card-type" class="form-control">
 						{% for card_type in card_types %}
 						<option value="{{ card_type['code'] }}">{{ card_type['name'] }}</option>
 						{% endfor %}
 					</select>
 				</div>
 			</div>
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-card-number">{{ entry_card_number }}</label>
-				<div class="col-sm-8">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-card-number">{{ entry_card_number }}</label>
+				<div class="col-sm-10">
 					<input type="text" name="opayo_card_number" value="" placeholder="{{ entry_card_number }}" id="input-card-number" class="form-control" />
 				</div>
 			</div>
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-card-expire-date">{{ entry_card_expire_date }}</label>
-				<div class="col-sm-4">
-					<select name="opayo_card_expire_date_month" id="input-card-expire-date" class="form-select">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-card-expire-date">{{ entry_card_expire_date }}</label>
+				<div class="col-sm-5">
+					<select name="opayo_card_expire_date_month" id="input-card-expire-date" class="form-control">
 						{% for month in months %}
 						<option value="{{ month['code'] }}">{{ month['name'] }}</option>
 						{% endfor %}
 					</select>
 				</div>
-				<div class="col-sm-4">
-					<select name="opayo_card_expire_date_year" class="form-select">
+				<div class="col-sm-5">
+					<select name="opayo_card_expire_date_year" class="form-control">
 						{% for year in years %}
 						<option value="{{ year['code'] }}">{{ year['name'] }}</option>
 						{% endfor %}
 					</select>
 				</div>
 			</div>
-			<div class="row mb-3 required">
-				<label class="col-sm-4 col-form-label" for="input-card-cvv2">{{ entry_card_cvv2 }}</label>
-				<div class="col-sm-8">
+			<div class="form-group required">
+				<label class="col-sm-2 control-label" for="input-card-cvv2">{{ entry_card_cvv2 }}</label>
+				<div class="col-sm-10">
 					<input type="text" name="opayo_card_cvv2_2" value="" placeholder="{{ entry_card_cvv2 }}" id="input-card-cvv2" class="form-control" />
 				</div>
 			</div>
 			{% if logged and card_save %}
-			<div class="row mb-3">
-				<label class="col-sm-4 col-form-label" for="input-card-save">{{ entry_card_save }}</label>
-				<div class="col-sm-4">
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="input-card-save">{{ entry_card_save }}</label>
+				<div class="col-sm-2">
 					<input type="checkbox" name="opayo_card_save" value="1" id="input-card-save" checked />
 				</div>
 			</div>
 			{% endif %}
 		</div>
 	</fieldset>
-	<div class="d-inline-block pt-2 pd-2 w-100 text-end">
-		<button type="button" id="opayo-button-confirm" class="btn btn-primary opayo-button-confirm">{{ button_confirm }}</button>
+	<div class="buttons">
+		<div class="pull-right">
+			<button type="button" id="opayo-button-confirm" class="btn btn-primary" data-loading-text="{{ text_loading }}">{{ button_confirm }}</button>
+		</div>
 	</div>
 </div>
+
 <script type="text/javascript">
 
 updateOpayo();
@@ -115,15 +118,15 @@ function updateOpayo() {
 	$('#opayo-form #opayo-button-delete-card').on('click', function () {
 		if (confirm('{{ text_confirm_delete }}')) {
 			$.ajax({
-				url: 'index.php?route=extension/opayo/payment/opayo|deleteCard&language={{ language }}',
+				url: 'index.php?route=extension/payment/opayo/deleteCard',
 				type: 'post',
 				data: $('#opayo-card-existing :input[name=\'opayo_card_token\']'),
 				dataType: 'json',
 				beforeSend: function () {
-					$('#opayo-button-delete-card').prop('disabled', true).addClass('loading');
+					$('#opayo-button-delete-card').button('loading');
 				},
 				complete: function () {
-					$('#opayo-button-delete-card').prop('disabled', false).removeClass('loading');
+					$('#opayo-button-delete-card').button('reset');
 				},
 				success: function (json) {
 					if (json['error']) {
@@ -131,7 +134,7 @@ function updateOpayo() {
 					}
 			
 					if (json['success']) {
-						$('#opayo-form').load('index.php?route=extension/opayo/payment/opayo|getForm&language={{ language }} #opayo-form >', function() {
+						$('#opayo-form').load('index.php?route=extension/payment/opayo/getForm #opayo-form >', function() {
 							updateOpayo();
 						});
 					}
@@ -154,15 +157,15 @@ function updateOpayo() {
 	
 		$.ajax({
 			type: 'post',
-			url: 'index.php?route=extension/opayo/payment/opayo|confirm&language={{ language }}',
+			url: 'index.php?route=extension/payment/opayo/confirm',
 			data: $('#opayo-form input[type="radio"]:checked, #opayo-form input[type="checkbox"]:checked, #opayo-form input[type="text"], #opayo-form input[type="hidden"], #opayo-form select'),
 			dataType: 'json',
 			cache: false,
 			beforeSend: function() {
-				$('#opayo-button-confirm').prop('disabled', true).addClass('loading');
+				$('#opayo-button-confirm').button('loading');
 			},
 			complete: function() {
-				$('#opayo-button-confirm').prop('disabled', false).removeClass('loading');
+				$('#opayo-button-confirm').button('reset');
 			},
 			success: function(json) {
 				if (json['ACSURL']) {

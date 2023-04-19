@@ -1,16 +1,13 @@
 <?php
-namespace Opencart\Catalog\Controller\Extension\Opayo\Payment;
-class Opayo extends \Opencart\System\Engine\Controller {
-	
-	public function index(): string {
+class ControllerExtensionPaymentOpayo extends Controller {
+	public function index() {
 		if ($this->config->get('payment_opayo_vendor')) {
-			$this->load->language('extension/opayo/payment/opayo');
-			
-			// Setting
-			$_config = new \Opencart\System\Engine\Config();
-			$_config->addPath(DIR_EXTENSION . 'opayo/system/config/');
-			$_config->load('opayo');
+			$this->load->language('extension/payment/opayo');
 		
+			// Setting
+			$_config = new Config();
+			$_config->load('opayo');
+			
 			$config_setting = $_config->get('opayo_setting');
 		
 			$setting = array_replace_recursive((array)$config_setting, (array)$this->config->get('payment_opayo_setting'));
@@ -20,15 +17,15 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		
 			$data['logged'] = $this->customer->isLogged();
 
-			$data['cards'] = [];			
+			$data['cards'] = array();			
 		
 			if ($data['logged'] && $data['card_save']) {
-				$this->load->model('extension/opayo/payment/opayo');
+				$this->load->model('extension/payment/opayo');
 			
-				$data['cards'] = $this->model_extension_opayo_payment_opayo->getCards($this->customer->getId());
+				$data['cards'] = $this->model_extension_payment_opayo->getCards($this->customer->getId());
 			}
 		
-			$data['months'] = [];
+			$data['months'] = array();
 
 			for ($i = 1; $i <= 12; $i++) {
 				$data['months'][] = array(
@@ -39,7 +36,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 
 			$today = getdate();
 
-			$data['years'] = [];
+			$data['years'] = array();
 
 			for ($i = $today['year']; $i < $today['year'] + 11; $i++) {
 				$data['years'][] = array(
@@ -47,10 +44,8 @@ class Opayo extends \Opencart\System\Engine\Controller {
 					'name'  => sprintf('%02d', $i % 100)
 				);
 			}
-			
-			$data['language'] = $this->config->get('config_language');
-		
-			return $this->load->view('extension/opayo/payment/opayo', $data);
+
+			return $this->load->view('extension/payment/opayo', $data);
 		}
 	}
 	
@@ -58,23 +53,22 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$this->response->setOutput($this->index());
 	}
 
-	public function confirm(): void {
-		$this->load->language('extension/opayo/payment/opayo');
+	public function confirm() {
+		$this->load->language('extension/payment/opayo');
 		
 		$this->load->model('checkout/order');
-		$this->load->model('extension/opayo/payment/opayo');
+		$this->load->model('extension/payment/opayo');
 		$this->load->model('account/order');
 		
 		// Setting
-		$_config = new \Opencart\System\Engine\Config();
-		$_config->addPath(DIR_EXTENSION . 'opayo/system/config/');
+		$_config = new Config();
 		$_config->load('opayo');
-		
+			
 		$config_setting = $_config->get('opayo_setting');
 		
 		$setting = array_replace_recursive((array)$config_setting, (array)$this->config->get('payment_opayo_setting'));
 
-		$payment_data = [];
+		$payment_data = array();
 
 		if ($setting['general']['environment'] == 'live') {
 			$url = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
@@ -93,7 +87,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$payment_data['Currency'] = $this->session->data['currency'];
 		$payment_data['Description'] = substr($this->config->get('config_name'), 0, 100);
 		$payment_data['TxType'] = $setting['general']['transaction_method'];
-
+		
 		if (!empty($this->request->post['opayo_card_existing']) && !empty($this->request->post['opayo_card_token'])) {
 			$payment_data['Token'] = $this->request->post['opayo_card_token'];
 			$payment_data['CV2'] = $this->request->post['opayo_card_cvv2_1'];
@@ -112,7 +106,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				$payment_data['StoreToken'] = '1';
 			}
 		}
-		
+
 		$payment_data['BillingSurname'] = substr($order_info['payment_lastname'], 0, 20);
 		$payment_data['BillingFirstnames'] = substr($order_info['payment_firstname'], 0, 20);
 		$payment_data['BillingAddress1'] = substr($order_info['payment_address_1'], 0, 100);
@@ -170,9 +164,10 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$payment_data['DeliveryPhone'] = $order_info['telephone'];
 		}
 
-		$order_products = $this->model_account_order->getProducts($this->session->data['order_id']);
+		$order_products = $this->model_account_order->getOrderProducts($this->session->data['order_id']);
 		
 		$cart_rows = 0;
+		
 		$str_basket = "";
 		
 		foreach ($order_products as $product) {
@@ -186,7 +181,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$cart_rows++;
 		}
 
-		$order_totals = $this->model_account_order->getTotals($this->session->data['order_id']);
+		$order_totals = $this->model_account_order->getOrderTotals($this->session->data['order_id']);
 		
 		foreach ($order_totals as $total) {
 			$str_basket .= ":" . str_replace(":", " ", $total['title']) . ":::::" . $this->currency->format($total['value'], $order_info['currency_code'], false, false);
@@ -201,10 +196,10 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$payment_data['ClientIPAddress'] = $this->request->server['REMOTE_ADDR'];
 		$payment_data['ChallengeWindowSize'] = '01';
 		$payment_data['Apply3DSecure'] = '0';
-		$payment_data['ThreeDSNotificationURL'] = str_replace('&amp;', '&', $this->url->link('extension/opayo/payment/opayo|threeDSnotify', 'order_id=' . $this->session->data['order_id'] . '&language=' . $this->config->get('config_language')));
+		$payment_data['ThreeDSNotificationURL'] = str_replace('&amp;', '&', $this->url->link('extension/payment/opayo/threeDSnotify', 'order_id=' . $this->session->data['order_id'], true));
 		
 		$payment_data['InitiatedType'] = 'CIT';
-		
+
 		$browser_languages = explode(',', $this->request->server['HTTP_ACCEPT_LANGUAGE']);
 		$browser_language = strtolower(reset($browser_languages));
 		
@@ -217,10 +212,10 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$payment_data['BrowserScreenWidth'] = $this->request->post['BrowserScreenWidth'];
 		$payment_data['BrowserTZ'] = $this->request->post['BrowserTZ'];
 		$payment_data['BrowserUserAgent'] = $this->request->server['HTTP_USER_AGENT'];
-		
-		$response_data = $this->model_extension_opayo_payment_opayo->sendCurl($url, $payment_data);
 
-		$json = [];
+		$response_data = $this->model_extension_payment_opayo->sendCurl($url, $payment_data);
+		
+		$json = array();
 
 		if ($response_data['Status'] == '3DAUTH') {
 			$json['ACSURL'] = $response_data['ACSURL'];
@@ -245,19 +240,19 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				$card_data['ExpiryDate'] = $this->request->post['opayo_card_expire_date_month'] . '/' . substr($this->request->post['opayo_card_expire_date_year'], 2);
 				$card_data['CardType'] = $payment_data['CardType'];
 				
-				$card_id = $this->model_extension_opayo_payment_opayo->addCard($card_data);
+				$card_id = $this->model_extension_payment_opayo->addCard($card_data);
 			} elseif (!empty($payment_data['Token'])) {
-				$card = $this->model_extension_opayo_payment_opayo->getCard(false, $payment_data['Token']);
+				$card = $this->model_extension_payment_opayo->getCard(false, $payment_data['Token']);
 				$card_id = $card['card_id'];
 			}
-
-			$this->model_extension_opayo_payment_opayo->addOrder($this->session->data['order_id'], $response_data, $payment_data, $card_id);
 			
-			$this->model_extension_opayo_payment_opayo->log('Response data', $response_data);
-			$this->model_extension_opayo_payment_opayo->log('Payment data', $payment_data);
-			$this->model_extension_opayo_payment_opayo->log('Order Id', $this->session->data['order_id']);
+			$this->model_extension_payment_opayo->addOrder($this->session->data['order_id'], $response_data, $payment_data, $card_id);
+			
+			$this->model_extension_payment_opayo->log('Response Data', $response_data);
+			$this->model_extension_payment_opayo->log('Payment Data', $payment_data);
+			$this->model_extension_payment_opayo->log('Order Id', $this->session->data['order_id']);
 
-			$json['TermUrl'] = str_replace('&amp;', '&', $this->url->link('extension/opayo/payment/opayo|threeDSnotify', 'order_id=' . $this->session->data['order_id'] . '&language=' . $this->config->get('config_language'), true));
+			$json['TermUrl'] = str_replace('&amp;', '&', $this->url->link('extension/payment/opayo/threeDSnotify', 'order_id=' . $this->session->data['order_id'], true));
 		} elseif ($response_data['Status'] == 'OK' || $response_data['Status'] == 'AUTHENTICATED' || $response_data['Status'] == 'REGISTERED') {
 			$message = '';
 
@@ -302,72 +297,71 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				$card_data['ExpiryDate'] = $this->request->post['opayo_card_expire_date_month'] . '/' . substr($this->request->post['opayo_card_expire_date_year'], 2);
 				$card_data['CardType'] = $payment_data['CardType'];
 				
-				$card_id = $this->model_extension_opayo_payment_opayo->addCard($card_data);
+				$card_id = $this->model_extension_payment_opayo->addCard($card_data);
 			} elseif (!empty($payment_data['Token'])) {
-				$card = $this->model_extension_opayo_payment_opayo->getCard(false, $payment_data['Token']);
+				$card = $this->model_extension_payment_opayo->getCard(false, $payment_data['Token']);
 				$card_id = $card['card_id'];
 			}
 
-			$opayo_order_id = $this->model_extension_opayo_payment_opayo->addOrder($order_info['order_id'], $response_data, $payment_data, $card_id);
+			$opayo_order_id = $this->model_extension_payment_opayo->addOrder($order_info['order_id'], $response_data, $payment_data, $card_id);
 			
-			$this->model_extension_opayo_payment_opayo->log('Response data', $response_data);
-			$this->model_extension_opayo_payment_opayo->log('Payment data', $payment_data);
-			$this->model_extension_opayo_payment_opayo->log('Order Id', $this->session->data['order_id']);
+			$this->model_extension_payment_opayo->log('Response Data', $response_data);
+			$this->model_extension_payment_opayo->log('Payment Data', $payment_data);
+			$this->model_extension_payment_opayo->log('Order Id', $this->session->data['order_id']);
 
-			$this->model_extension_opayo_payment_opayo->addOrderTransaction($opayo_order_id, $setting['general']['transaction_method'], $order_info);
+			$this->model_extension_payment_opayo->addOrderTransaction($opayo_order_id, $setting['general']['transaction_method'], $order_info);
 
-			$this->model_checkout_order->addHistory($this->session->data['order_id'], $setting['general']['order_status_id'], $message, false);
+			$this->model_checkout_order->addOrderHistory($this->session->data['order_id'], $setting['general']['order_status_id'], $message, false);
 
 			if ($setting['general']['transaction_method'] == 'PAYMENT') {
-				$subscriptions = $this->cart->getSubscription();
-				
-				//loop through any products that are subscription items
-				foreach ($subscriptions as $item) {
-					$this->model_extension_opayo_payment_opayo->subscriptionPayment($item, $payment_data['VendorTxCode']);
-				}
+				$recurring_products = $this->cart->getRecurringProducts();
+					
+				//loop through any products that are recurring items
+				foreach ($recurring_products as $item) {
+					$this->model_extension_payment_opayo->recurringPayment($item, $payment_data['VendorTxCode']);
+				} 
 			}
 
-			$json['redirect'] = $this->url->link('checkout/success', 'language=' . $this->config->get('config_language'));
+			$json['redirect'] = $this->url->link('checkout/success', '', true);
 		} else {
 			$json['error'] = $response_data['Status'] . ': ' . $response_data['StatusDetail'];
 			
-			$this->model_extension_opayo_payment_opayo->log('Response data', $json['error']);
+			$this->model_extension_payment_opayo->log('Response data', $json['error']);
 		}
 
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
-			
-	public function threeDSnotify(): void {		
-		$this->load->language('extension/opayo/payment/opayo');
+
+	public function threeDSnotify() {
+		$this->load->language('extension/payment/opayo');
 		
-		$this->load->model('extension/opayo/payment/opayo');
+		$this->load->model('extension/payment/opayo');
 		$this->load->model('checkout/order');
 		
 		// Setting
-		$_config = new \Opencart\System\Engine\Config();
-		$_config->addPath(DIR_EXTENSION . 'opayo/system/config/');
+		$_config = new Config();
 		$_config->load('opayo');
-		
+			
 		$config_setting = $_config->get('opayo_setting');
 		
 		$setting = array_replace_recursive((array)$config_setting, (array)$this->config->get('payment_opayo_setting'));
-		
+
 		if (isset($this->request->get['order_id'])) {
-			$opayo_order_info = $this->model_extension_opayo_payment_opayo->getOrder($this->request->get['order_id']);
-				
+			$opayo_order_info = $this->model_extension_payment_opayo->getOrder($this->request->get['order_id']);
+			
 			if ($setting['general']['environment'] == 'live') {
 				$url = 'https://live.sagepay.com/gateway/service/direct3dcallback.vsp';
 			} elseif ($setting['general']['environment'] == 'test') {
 				$url = 'https://test.sagepay.com/gateway/service/direct3dcallback.vsp';
 			}
-				
+			
 			$this->request->post['VPSTxId'] = $opayo_order_info['VPSTxId'];
-								
-			$response_data = $this->model_extension_opayo_payment_opayo->sendCurl($url, $this->request->post);
-							
-			$this->model_extension_opayo_payment_opayo->log('Response Data', $response_data);
-				
+
+			$response_data = $this->model_extension_payment_opayo->sendCurl($url, $this->request->post);
+			
+			$this->model_extension_payment_opayo->log('Response Data', $response_data);
+
 			if ($response_data['Status'] == 'OK' || $response_data['Status'] == 'AUTHENTICATED' || $response_data['Status'] == 'REGISTERED') {
 				$message = '';
 
@@ -402,55 +396,55 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				}
 
 				$order_info = $this->model_checkout_order->getOrder($this->request->get['order_id']);
-					
-				$this->model_extension_opayo_payment_opayo->log('Order Info', $order_info);
-				$this->model_extension_opayo_payment_opayo->log('opayo Order Info', $opayo_order_info);
+				$opayo_order_info = $this->model_extension_payment_opayo->getOrder($this->request->get['order_id']);
 
-				$this->model_extension_opayo_payment_opayo->updateOrder($order_info, $response_data);
-				$this->model_extension_opayo_payment_opayo->addOrderTransaction($opayo_order_info['opayo_order_id'], $this->config->get('payment_opayo_transaction'), $order_info);
-				$this->model_checkout_order->addHistory($this->request->get['order_id'],  $setting['general']['order_status_id'], $message, false);
+				$this->model_extension_payment_opayo->log('Order Info', $order_info);
+				$this->model_extension_payment_opayo->log('Opayo Order Info', $opayo_order_info);
+
+				$this->model_extension_payment_opayo->updateOrder($order_info, $response_data);
+				$this->model_extension_payment_opayo->addOrderTransaction($opayo_order_info['opayo_order_id'], $setting['general']['transaction_method'], $order_info);
+				$this->model_checkout_order->addOrderHistory($this->request->get['order_id'], $setting['general']['order_status_id'], $message, false);
 
 				if (!empty($response_data['Token']) && $this->customer->isLogged()) {
-					$this->model_extension_opayo_payment_opayo->updateCard($opayo_order_info['card_id'], $response_data['Token']);
+					$this->model_extension_payment_opayo->updateCard($opayo_order_info['card_id'], $response_data['Token']);
 				} else {
-					$this->model_extension_opayo_payment_opayo->deleteCard($opayo_order_info['card_id']);
+					$this->model_extension_payment_opayo->deleteCard($opayo_order_info['card_id']);
 				}
 				
 				if ($setting['general']['transaction_method'] == 'PAYMENT') {
-					$subscriptions = $this->cart->getSubscription();
+					$recurring_products = $this->cart->getRecurringProducts();
 					
-					//loop through any products that are subscription items
-					foreach ($subscriptions as $item) {
-						$this->model_extension_opayo_payment_opayo->subscriptionPayment($item, $payment_data['VendorTxCode']);
+					//loop through any products that are recurring items
+					foreach ($recurring_products as $item) {
+						$this->model_extension_payment_opayo->recurringPayment($item, $opayo_order_info['VendorTxCode']);
 					}
 				}
 
-				$this->response->redirect($this->url->link('checkout/success', 'language=' . $this->config->get('config_language')));
+				$this->response->redirect($this->url->link('checkout/success', '', true));
 			} else {
 				$this->session->data['error'] = $response_data['StatusDetail'];
 
-				$this->response->redirect($this->url->link('checkout/checkout', 'language=' . $this->config->get('config_language')));
+				$this->response->redirect($this->url->link('checkout/checkout', '', true));
 			}
 		} else {
-			$this->response->redirect($this->url->link('account/login', 'language=' . $this->config->get('config_language')));
+			$this->response->redirect($this->url->link('account/login', '', true));
 		}
 	}
 	
-	public function deleteCard(): void {
-		$this->load->language('extension/opayo/payment/opayo');
+	public function deleteCard() {
+		$this->load->language('extension/payment/opayo');
 
-		$this->load->model('extension/opayo/payment/opayo');
+		$this->load->model('extension/payment/opayo');
 		
 		// Setting
-		$_config = new \Opencart\System\Engine\Config();
-		$_config->addPath(DIR_EXTENSION . 'opayo/system/config/');
+		$_config = new Config();
 		$_config->load('opayo');
-		
+			
 		$config_setting = $_config->get('opayo_setting');
 		
 		$setting = array_replace_recursive((array)$config_setting, (array)$this->config->get('payment_opayo_setting'));
 
-		$card = $this->model_extension_opayo_payment_opayo->getCard(false, $this->request->post['opayo_card_token']);
+		$card = $this->model_extension_payment_opayo->getCard(false, $this->request->post['opayo_card_token']);
 
 		if (!empty($card['token'])) {
 			if ($setting['general']['environment'] == 'live') {
@@ -464,10 +458,10 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$payment_data['TxType'] = 'REMOVETOKEN';
 			$payment_data['Token'] = $card['token'];
 			
-			$response_data = $this->model_extension_opayo_payment_opayo->sendCurl($url, $payment_data);
+			$response_data = $this->model_extension_payment_opayo->sendCurl($url, $payment_data);
 			
 			if ($response_data['Status'] == 'OK') {
-				$this->model_extension_opayo_payment_opayo->deleteCard($card['card_id']);
+				$this->model_extension_payment_opayo->deleteCard($card['card_id']);
 
 				$this->session->data['success'] = $this->language->get('text_success_card');
 					
@@ -482,7 +476,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$this->response->setOutput(json_encode($json));
 	}
 
-	public function cron(): void {
+	public function cron() {
 		// Setting
 		$_config = new Config();
 		$_config->load('opayo');
@@ -492,13 +486,14 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$setting = array_replace_recursive((array)$config_setting, (array)$this->config->get('payment_opayo_setting'));
 			
 		if (isset($this->request->get['token']) && hash_equals($setting['cron']['token'], $this->request->get['token'])) {
-			$this->load->model('extension/opayo/payment/opayo');
+			$this->load->model('extension/payment/opayo');
+	
+			$orders = $this->model_extension_payment_opayo->cronPayment();
 
-			$orders = $this->model_extension_opayo_payment_opayo->cronPayment();
+			$this->model_extension_payment_opayo->updateCronRunTime();
 
-			$this->model_extension_opayo_payment_opayo->updateCronRunTime();
-
-			$this->model_extension_opayo_payment_opayo->log('Repeat Orders', $orders);
+			$this->model_extension_payment_opayo->log('Repeat Orders', $orders);
 		}
 	}
+
 }
