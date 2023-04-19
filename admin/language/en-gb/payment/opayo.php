@@ -3,6 +3,7 @@
 $_['heading_title']		 				= 'Opayo';
 
 // Text
+$_['text_opayo']	  					= '<img src="view/image/payment/opayo.png" alt="Opayo" title="Opayo" />';
 $_['text_extensions']     				= 'Extensions';
 $_['text_edit']          				= 'Edit Opayo';
 $_['text_tab_general']				 	= 'General';
@@ -31,6 +32,7 @@ $_['text_confirm_rebate']	  			= 'Are you sure you want to rebate the payment?';
 $_['entry_vendor']			  			= 'Vendor';
 $_['entry_environment']			  		= 'Environment';
 $_['entry_transaction_method']		  	= 'Transaction Method';
+$_['entry_total']             			= 'Total';
 $_['entry_order_status']	  			= 'Order Status';
 $_['entry_geo_zone']		  			= 'Geo Zone';
 $_['entry_status']			  			= 'Status';
@@ -42,6 +44,7 @@ $_['entry_cron_url']	  				= 'URL';
 $_['entry_cron_last_run']	 			= 'Last run time:';
 
 // Help
+$_['help_total']			  			= 'The checkout total the order must reach before this payment method becomes active.';
 $_['help_debug']			  			= 'Enabling debug will write sensitive data to a log file. You should always disable unless instructed otherwise.';
 $_['help_transaction_method']  			= 'Transaction method MUST be set to Payment to allow subscription payments.';
 $_['help_card_save']			  		= 'In order for buyer can save card details for subsequent payments, MID TOKEN must be subscribed. You will need to contact Opayo customer support to discuss enabling the token system for your account.';
