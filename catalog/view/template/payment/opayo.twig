@@ -115,7 +115,7 @@ function updateOpayo() {
 	$('#opayo-form #opayo-button-delete-card').on('click', function () {
 		if (confirm('{{ text_confirm_delete }}')) {
 			$.ajax({
-				url: 'index.php?route=extension/opayo/payment/opayo|deleteCard&language={{ language }}',
+				url: 'index.php?route=extension/opayo/payment/opayo{{ separator }}deleteCard&language={{ language }}',
 				type: 'post',
 				data: $('#opayo-card-existing :input[name=\'opayo_card_token\']'),
 				dataType: 'json',
@@ -131,7 +131,7 @@ function updateOpayo() {
 					}
 			
 					if (json['success']) {
-						$('#opayo-form').load('index.php?route=extension/opayo/payment/opayo|getForm&language={{ language }} #opayo-form >', function() {
+						$('#opayo-form').load('index.php?route=extension/opayo/payment/opayo{{ separator }}getForm&language={{ language }} #opayo-form >', function() {
 							updateOpayo();
 						});
 					}
@@ -154,7 +154,7 @@ function updateOpayo() {
 	
 		$.ajax({
 			type: 'post',
-			url: 'index.php?route=extension/opayo/payment/opayo|confirm&language={{ language }}',
+			url: 'index.php?route=extension/opayo/payment/opayo{{ separator }}confirm&language={{ language }}',
 			data: $('#opayo-form input[type="radio"]:checked, #opayo-form input[type="checkbox"]:checked, #opayo-form input[type="text"], #opayo-form input[type="hidden"], #opayo-form select'),
 			dataType: 'json',
 			cache: false,

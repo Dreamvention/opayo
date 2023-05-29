@@ -1,6 +1,17 @@
 <?php
 namespace Opencart\Catalog\Controller\Extension\Opayo\Payment;
 class Opayo extends \Opencart\System\Engine\Controller {
+	private $separator = '';
+	
+	public function __construct($registry) {
+        parent::__construct($registry);
+
+		if (VERSION >= '4.0.2.0') {
+			$this->separator = '.';
+		} else {
+			$this->separator = '|';
+		}
+    }
 	
 	public function index(): string {
 		if ($this->config->get('payment_opayo_vendor')) {
@@ -48,6 +59,8 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				);
 			}
 			
+			$data['separator'] = $this->separator;
+						
 			$data['language'] = $this->config->get('config_language');
 		
 			return $this->load->view('extension/opayo/payment/opayo', $data);
@@ -201,8 +214,9 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$payment_data['ClientIPAddress'] = $this->request->server['REMOTE_ADDR'];
 		$payment_data['ChallengeWindowSize'] = '01';
 		$payment_data['Apply3DSecure'] = '0';
-		$payment_data['ThreeDSNotificationURL'] = str_replace('&amp;', '&', $this->url->link('extension/opayo/payment/opayo|threeDSnotify', 'order_id=' . $this->session->data['order_id'] . '&language=' . $this->config->get('config_language')));
 		
+		$payment_data['ThreeDSNotificationURL'] = str_replace('&amp;', '&', $this->url->link('extension/opayo/payment/opayo' . $this->separator . 'threeDSnotify', 'order_id=' . $this->session->data['order_id'] . '&language=' . $this->config->get('config_language')));
+				
 		$payment_data['InitiatedType'] = 'CIT';
 		
 		$browser_languages = explode(',', $this->request->server['HTTP_ACCEPT_LANGUAGE']);
@@ -257,7 +271,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$this->model_extension_opayo_payment_opayo->log('Payment data', $payment_data);
 			$this->model_extension_opayo_payment_opayo->log('Order Id', $this->session->data['order_id']);
 
-			$json['TermUrl'] = str_replace('&amp;', '&', $this->url->link('extension/opayo/payment/opayo|threeDSnotify', 'order_id=' . $this->session->data['order_id'] . '&language=' . $this->config->get('config_language'), true));
+			$json['TermUrl'] = str_replace('&amp;', '&', $this->url->link('extension/opayo/payment/opayo' . $this->separator . 'threeDSnotify', 'order_id=' . $this->session->data['order_id'] . '&language=' . $this->config->get('config_language'), true));
 		} elseif ($response_data['Status'] == 'OK' || $response_data['Status'] == 'AUTHENTICATED' || $response_data['Status'] == 'REGISTERED') {
 			$message = '';
 

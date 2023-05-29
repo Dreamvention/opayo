@@ -28,6 +28,40 @@ class Opayo extends \Opencart\System\Engine\Model {
 		return $method_data;
 	}
 	
+	public function getMethods(array $address = []): array {
+		$this->load->language('extension/opayo/payment/opayo');
+			
+		if (!$this->config->get('config_checkout_payment_address')) {
+			$status = true;
+		} elseif (!$this->config->get('payment_opayo_geo_zone_id')) {
+			$status = true;
+		} else {
+			$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "zone_to_geo_zone` WHERE `geo_zone_id` = '" . (int)$this->config->get('payment_opayo_geo_zone_id') . "' AND `country_id` = '" . (int)$address['country_id'] . "' AND (`zone_id` = '" . (int)$address['zone_id'] . "' OR `zone_id` = '0')");
+
+			if ($query->num_rows) {
+				$status = true;
+			} else {
+				$status = false;
+			}
+		}
+
+		if ($status) {
+			$option_data['opayo'] = [
+				'code' => 'opayo.opayo',
+				'name' => $this->language->get('text_title')
+			];
+				
+			$method_data = [
+				'code'       => 'opayo',
+				'name'       => $this->language->get('text_title'),
+				'option'     => $option_data,
+				'sort_order' => $this->config->get('payment_opayo_sort_orderr')
+			];
+		}
+
+		return $method_data;
+	}
+	
 	public function getCards(int $customer_id): array {
 		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "opayo_card` WHERE `customer_id` = '" . (int)$customer_id . "' ORDER BY `card_id`");
 

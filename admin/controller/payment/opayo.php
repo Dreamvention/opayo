@@ -2,6 +2,17 @@
 namespace Opencart\Admin\Controller\Extension\Opayo\Payment;
 class Opayo extends \Opencart\System\Engine\Controller {
 	private $error = [];
+	private $separator = '';
+	
+	public function __construct($registry) {
+        parent::__construct($registry);
+
+		if (VERSION >= '4.0.2.0') {
+			$this->separator = '.';
+		} else {
+			$this->separator = '|';
+		}
+    }
 	
 	public function index(): void {
 		$this->load->language('extension/opayo/payment/opayo');
@@ -25,7 +36,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			'href' => $this->url->link('extension/opayo/payment/opayo', 'user_token=' . $this->session->data['user_token'])
 		];
 		
-		$data['save'] = $this->url->link('extension/opayo/payment/opayo|save', 'user_token=' . $this->session->data['user_token']);
+		$data['save'] = $this->url->link('extension/opayo/payment/opayo' . $this->separator . 'save', 'user_token=' . $this->session->data['user_token']);
 		$data['back'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment');	
 		
 		$server = HTTP_SERVER;
@@ -60,7 +71,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		}
 
 		if (!$data['setting']['cron']['url']) {
-			$data['setting']['cron']['url'] = $catalog . 'index.php?route=extension/opayo/payment|cron&token=' . $data['setting']['cron']['token'];
+			$data['setting']['cron']['url'] = $catalog . 'index.php?route=extension/opayo/payment' . $this->separator . 'cron&token=' . $data['setting']['cron']['token'];
 		}
 							
 		$data['header'] = $this->load->controller('common/header');
@@ -120,8 +131,10 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				$data['order_id'] = $this->request->get['order_id'];
 				
 				$data['user_token'] = $this->request->get['user_token'];
+				
+				$data['separator'] = $this->separator;
 
-				return $this->load->view('extension/opayo/payment/opayo_order', $data);
+				return $this->load->view('extension/opayo/payment/order', $data);
 			}
 		}
 	}
