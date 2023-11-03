@@ -90,10 +90,10 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$payment_data = [];
 
 		if ($setting['general']['environment'] == 'live') {
-			$url = 'https://live.sagepay.com/gateway/service/vspdirect-register.vsp';
+			$url = 'https://live.opayo.eu.elavon.com/gateway/service/vspdirect-register.vsp';
 			$payment_data['VPSProtocol'] = '4.00';
 		} elseif ($setting['general']['environment'] == 'test') {
-			$url = 'https://test.sagepay.com/gateway/service/vspdirect-register.vsp';
+			$url = 'https://sandbox.opayo.eu.elavon.com/gateway/service/vspdirect-register.vsp';
 			$payment_data['VPSProtocol'] = '4.00';
 		}
 
@@ -371,9 +371,9 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$opayo_order_info = $this->model_extension_opayo_payment_opayo->getOrder($this->request->get['order_id']);
 				
 			if ($setting['general']['environment'] == 'live') {
-				$url = 'https://live.sagepay.com/gateway/service/direct3dcallback.vsp';
+				$url = 'https://live.opayo.eu.elavon.com/gateway/service/direct3dcallback.vsp';
 			} elseif ($setting['general']['environment'] == 'test') {
-				$url = 'https://test.sagepay.com/gateway/service/direct3dcallback.vsp';
+				$url = 'https://sandbox.opayo.eu.elavon.com/gateway/service/direct3dcallback.vsp';
 			}
 				
 			$this->request->post['VPSTxId'] = $opayo_order_info['VPSTxId'];
@@ -468,9 +468,9 @@ class Opayo extends \Opencart\System\Engine\Controller {
 
 		if (!empty($card['token'])) {
 			if ($setting['general']['environment'] == 'live') {
-				$url = 'https://live.sagepay.com/gateway/service/removetoken.vsp';
+				$url = 'https://live.opayo.eu.elavon.com/gateway/service/removetoken.vsp';
 			} elseif ($setting['general']['environment'] == 'test') {
-				$url = 'https://test.sagepay.com/gateway/service/removetoken.vsp';
+				$url = 'https://sandbox.opayo.eu.elavon.com/gateway/service/removetoken.vsp';
 			}
 				
 			$payment_data['VPSProtocol'] = '4.00';
