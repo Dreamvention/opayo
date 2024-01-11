@@ -216,7 +216,7 @@ class ControllerPaymentOpayo extends Controller {
 
 				$data['order_id'] = (int)$this->request->get['order_id'];
 				
-				$data['token'] = $this->session->data['user_token'];
+				$data['token'] = $this->session->data['token'];
 
 				return $this->load->view('payment/opayo/order', $data);
 			}
