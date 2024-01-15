@@ -34,26 +34,6 @@ class Opayo extends \Opencart\System\Engine\Model {
 			  PRIMARY KEY (`opayo_order_transaction_id`),
 			  KEY (`opayo_order_id`)
 			) ENGINE=MyISAM DEFAULT COLLATE=utf8_general_ci;");
-
-		$this->db->query("
-			CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "opayo_order_subscription` (
-			  `opayo_order_subscription_id` INT(11) NOT NULL AUTO_INCREMENT,
-			  `order_id` INT(11) NOT NULL,
-			  `subscription_id` INT(11) NOT NULL,
-			  `VPSTxId` VARCHAR(50),
-			  `VendorTxCode` VARCHAR(50) NOT NULL,
-			  `SecurityKey` CHAR(50) NOT NULL,
-			  `TxAuthNo` INT(50),
-			  `date_added` DATETIME NOT NULL,
-			  `date_modified` DATETIME NOT NULL,
-			  `next_payment` DATETIME NOT NULL,
-			  `trial_end` DATETIME DEFAULT NULL,
-			  `subscription_end` DATETIME DEFAULT NULL,
-			  `currency_code` CHAR(3) NOT NULL,
-			  `total` DECIMAL( 10, 2 ) NOT NULL,
-			  PRIMARY KEY (`opayo_order_subscription_id`),
-			  KEY (`order_id`)
-			) ENGINE=MyISAM DEFAULT COLLATE=utf8_general_ci;");
 			
 		$this->db->query("
 			CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "opayo_card` (
@@ -72,7 +52,6 @@ class Opayo extends \Opencart\System\Engine\Model {
 	public function uninstall(): void {
 		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "opayo_order`;");
 		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "opayo_order_transaction`;");
-		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "opayo_order_subscription`;");
 		$this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "opayo_card`;");
 	}
 
@@ -268,13 +247,13 @@ class Opayo extends \Opencart\System\Engine\Model {
 		$response_info = explode(chr(10), $response);
 
 		foreach ($response_info as $string) {
-			if (strpos($string, '=') && isset($i)) {
-				$parts = explode('=', $string, 2);
-				$data['RepeatResponseData_' . $i][trim($parts[0])] = trim($parts[1]);
-			} elseif (strpos($string, '=')) {
-				$parts = explode('=', $string, 2);
-				$data[trim($parts[0])] = trim($parts[1]);
+			if (strpos($string, '=') === false) {
+				continue;
 			}
+			
+			$parts = explode('=', $string, 2);
+			
+			$data[trim($parts[0])] = trim($parts[1]);
 		}
 		
 		return $data;
@@ -292,7 +271,7 @@ class Opayo extends \Opencart\System\Engine\Model {
 		if ($setting['general']['debug']) {
 			$log = new \Opencart\System\Library\Log('opayo.log');
 			
-			$log->write($title . ': ' . print_r($data, 1));
+			$log->write($title . ': ' . print_r($data, true));
 		}
 	}
 }

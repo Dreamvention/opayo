@@ -139,7 +139,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 		$payment_data['BillingCountry'] = $order_info['payment_iso_code_2'];
 
 		if ($order_info['payment_iso_code_2'] == 'US') {
-			$payment_data['BillingState'] = $order_info['payment_zone_code'];
+			$payment_data['BillingState'] = $order_info['payment_zone'];
 		}
 
 		$payment_data['BillingPhone'] = substr($order_info['telephone'], 0, 20);
@@ -158,7 +158,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$payment_data['DeliveryCountry'] = $order_info['shipping_iso_code_2'];
 
 			if ($order_info['shipping_iso_code_2'] == 'US') {
-				$payment_data['DeliveryState'] = $order_info['shipping_zone_code'];
+				$payment_data['DeliveryState'] = $order_info['shipping_zone'];
 			}
 
 			$payment_data['CustomerName'] = substr($order_info['firstname'] . ' ' . $order_info['lastname'], 0, 100);
@@ -177,7 +177,7 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$payment_data['DeliveryCountry'] = $order_info['payment_iso_code_2'];
 
 			if ($order_info['payment_iso_code_2'] == 'US') {
-				$payment_data['DeliveryState'] = $order_info['payment_zone_code'];
+				$payment_data['DeliveryState'] = $order_info['payment_zone'];
 			}
 
 			$payment_data['DeliveryPhone'] = $order_info['telephone'];
@@ -333,12 +333,12 @@ class Opayo extends \Opencart\System\Engine\Controller {
 			$this->model_checkout_order->addHistory($this->session->data['order_id'], $setting['general']['order_status_id'], $message, false);
 
 			if ($setting['general']['transaction_method'] == 'PAYMENT') {
-				$subscriptions = $this->cart->getSubscription();
-				
+				$subscriptions = $this->model_extension_opayo_payment_opayo->getSubscriptionsByOrderId($order_info['order_id']);
+					
 				//loop through any products that are subscription items
 				foreach ($subscriptions as $item) {
 					$this->model_extension_opayo_payment_opayo->subscriptionPayment($item, $payment_data['VendorTxCode']);
-				}
+				} 
 			}
 
 			$json['redirect'] = $this->url->link('checkout/success', 'language=' . $this->config->get('config_language'));
@@ -431,12 +431,12 @@ class Opayo extends \Opencart\System\Engine\Controller {
 				}
 				
 				if ($setting['general']['transaction_method'] == 'PAYMENT') {
-					$subscriptions = $this->cart->getSubscription();
+					$subscriptions = $this->model_extension_opayo_payment_opayo->getSubscriptionsByOrderId($this->request->get['order_id']);
 					
 					//loop through any products that are subscription items
 					foreach ($subscriptions as $item) {
 						$this->model_extension_opayo_payment_opayo->subscriptionPayment($item, $payment_data['VendorTxCode']);
-					}
+					} 
 				}
 
 				$this->response->redirect($this->url->link('checkout/success', 'language=' . $this->config->get('config_language')));
