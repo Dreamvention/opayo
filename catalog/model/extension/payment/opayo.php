@@ -6,7 +6,7 @@ class ModelExtensionPaymentOpayo extends Model {
 
 		$query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "zone_to_geo_zone` WHERE `geo_zone_id` = '" . (int)$this->config->get('payment_opayo_geo_zone_id') . "' AND `country_id` = '" . (int)$address['country_id'] . "' AND (`zone_id` = '" . (int)$address['zone_id'] . "' OR `zone_id` = '0')");
 
-		if ($this->config->get('opayo_total') > 0 && $this->config->get('payment_opayo_total') > $total) {
+		if ($this->config->get('payment_opayo_total') > 0 && $this->config->get('payment_opayo_total') > $total) {
 			$status = false;
 		} elseif (!$this->config->get('payment_opayo_geo_zone_id')) {
 			$status = true;
@@ -391,10 +391,10 @@ class ModelExtensionPaymentOpayo extends Model {
 		return $qry->row;
 	}
 	
-	public function addRecurring($order_id, $description, $data, $reference) {
-		$this->db->query("INSERT INTO `" . DB_PREFIX . "order_recurring` SET `order_id` = '" . (int)$order_id . "', `date_added` = NOW(), `status` = '1', `product_id` = '" . (int)$data['product_id'] . "', `product_name` = '" . $this->db->escape($data['name']) . "', `product_quantity` = '" . $this->db->escape($data['quantity']) . "', `recurring_id` = '" . (int)$data['recurring']['recurring_id'] . "', `recurring_name` = '" . $this->db->escape($data['name']) . "', `recurring_description` = '" . $this->db->escape($description) . "', `recurring_frequency` = '" . $this->db->escape($data['recurring']['frequency']) . "', `recurring_cycle` = '" . (int)$data['recurring']['cycle'] . "', `recurring_duration` = '" . (int)$data['recurring']['duration'] . "', `recurring_price` = '" . (float)$data['recurring']['price'] . "', `trial` = '" . (int)$data['recurring']['trial'] . "', `trial_frequency` = '" . $this->db->escape($data['recurring']['trial_frequency']) . "', `trial_cycle` = '" . (int)$data['recurring']['trial_cycle'] . "', `trial_duration` = '" . (int)$data['recurring']['trial_duration'] . "', `trial_price` = '" . (float)$data['recurring']['trial_price'] . "', `reference` = '" . $this->db->escape($reference) . "'");
-
-		return $this->db->getLastId();
+	private function addRecurring($order_id, $description, $data, $reference) {
+		$order_recurring_id = $this->model_checkout_recurring->addRecurring($order_id, $description, $data);
+		$this->model_checkout_recurring->editReference($order_recurring_id, $reference);
+		return $order_recurring_id;
 	}
 	
 	public function editRecurringStatus($order_recurring_id, $status) {
