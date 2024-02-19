@@ -128,9 +128,9 @@ class Opayo extends \Opencart\System\Engine\Controller {
 
 				$data['auto_settle'] = $opayo_order['settle_type'];
 
-				$data['order_id'] = $this->request->get['order_id'];
+				$data['order_id'] = (int)$this->request->get['order_id'];
 				
-				$data['user_token'] = $this->request->get['user_token'];
+				$data['user_token'] = $this->session->data['user_token'];
 				
 				$data['separator'] = $this->separator;
 
